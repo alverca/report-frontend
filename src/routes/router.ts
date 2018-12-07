@@ -12,6 +12,9 @@ import authRouter from './auth';
 const router = express.Router();
 router.use(authRouter);
 router.use(authentication);
+router.use('/', (_, res) => {
+    res.redirect('/income');
+});
 router.use('/api', apiRouter);
 router.use('/income', incomeRouter);
 

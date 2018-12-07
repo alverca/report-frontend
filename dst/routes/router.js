@@ -11,6 +11,9 @@ const auth_1 = require("./auth");
 const router = express.Router();
 router.use(auth_1.default);
 router.use(authentication_1.default);
+router.use('/', (_, res) => {
+    res.redirect('/income');
+});
 router.use('/api', api_1.default);
 router.use('/income', income_1.default);
 exports.default = router;
