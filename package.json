@@ -3,7 +3,7 @@
     "name": "Motionpicture co.,ltd."
   },
   "dependencies": {
-    "@toei-jp/report-api-nodejs-client": "file:../report-api-nodejs-client",
+    "@toei-jp/report-api-nodejs-client": "0.0.1-alpha.0",
     "body-parser": "^1.17.2",
     "connect-redis": "^3.4.0",
     "cookie-parser": "^1.4.1",
@@ -92,5 +92,5 @@
     "scss": "node-sass public/scss/import.scss public/css/style.css",
     "public-ts": "webpack --progress --colors --config ./public/webpack.config.js --watch"
   },
-  "version": "1.0.0"
+  "version": "0.0.1"
 }
