@@ -14,7 +14,7 @@
 | Name                             | Required | Value            | Purpose                      |
 | -------------------------------- | -------- | ---------------- | ---------------------------- |
 | `DEBUG`                          | false    | report-backend:* | Debug                        |
-| `NODE_ENV`                       | true     |                  | Environment name             |
+| `NODE_ENV`                       | false    |                  | Environment name             |
 | `REDIS_PORT`                     | true     |                  | Redis Cache Connection       |
 | `REDIS_HOST`                     | true     |                  | Redis Cache Connection       |
 | `REDIS_KEY`                      | true     |                  | Redis Cache Connection       |
