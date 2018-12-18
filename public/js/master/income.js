@@ -104,13 +104,12 @@ var app = new Vue({
                 subjectGroupName: '',
                 subjectDetailCd: null,
                 subjectDetailName: '',
-                opponentSubjectCd: null,
+                opponentSubjectCd: '',
                 opponentSubjectName: '',
-                movieCd: null,
-                movieName: '',
-                workId: '',
+                screeningWorkId: '',
+                screeningWorkName: '',
+                screeningWorkSubTitle: '',
                 workCd: '',
-                workName: '',
                 note: '',
                 amount: 0,
                 quantity: 0,
@@ -230,25 +229,23 @@ var app = new Vue({
                             .find(['subjectGroupCd', data.subjectGroupCd]).subjectGroupName;
                         data.subjectDetailName = _(subjectDetailData)
                             .find(['subjectDetailCd', data.subjectDetailCd]).subjectDetailName;
-                        if (data.opponentSubjectCd !== null) {
+                        if (data.opponentSubjectCd !== '') {
                             data.opponentSubjectName = _(opponentSubjectData)
                                 .find(['subjectDetailCd', data.opponentSubjectCd]).subjectDetailName;
                         } else {
-                            delete data.opponentSubjectCd;
-                            delete data.opponentSubjectName;
+                            data.opponentSubjectCd = null;
+                            data.opponentSubjectName = null;
                         }
-                        if (data.movieCd !== null) {
-                            var movie = _(movies).find(['screeningWorkId', data.movieCd]);
-                            data.movieName = movie.screeningWorkName;
-                            data.workId = movie.workId;
+                        if (data.screeningWorkId !== '') {
+                            var movie = _(movies).find(['screeningWorkId', data.screeningWorkId]);
+                            data.screeningWorkName = movie.screeningWorkName;
+                            data.screeningWorkSubTitle = movie.screeningWorkSubTitle;
                             data.workCd = movie.workCd;
-                            data.workName = movie.workName;
                         } else {
-                            delete data.movieCd;
-                            delete data.movieName;
-                            delete data.workCd;
-                            delete data.workName;
-                            delete data.workId;
+                            data.screeningWorkId = null;
+                            data.screeningWorkName = null;
+                            data.screeningWorkSubTitle = null;
+                            data.workCd = null;
                         }
                         income.isValid = true;
                         postData.push(data);
@@ -278,10 +275,12 @@ var app = new Vue({
                     },
                     error: function(err) {
                         console.error(err);
-                        alert('エラーが発生しました。ページをリフレッシュします。');
+                        alert('エラーが発生しました。');
                     },
                     complete: this.hideLoading
                 });
+            } else if (!isValid) {
+                alert('細目コードが空白の行が存在してます。');
             }
         },
         hideLoading: function() {

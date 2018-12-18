@@ -108,3 +108,8 @@
       transform: rotate(360deg);
     }
 }
+@media (max-width: 768px) {
+    .separator {
+        opacity: 0;
+    }
+}

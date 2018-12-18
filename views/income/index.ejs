@@ -19,7 +19,7 @@
                         <span class="separator"></span>
                         <select name="year" class="form-control" v-model="date.year">
                             <option value="0" disabled selected>--</option>
-                            <option v-for="year in _.range(2000, 2020)" :value="year">{{ year }}</option>
+                            <option v-for="year in _.range(2015, new Date().getFullYear() + 2)" :value="year">{{ year }}</option>
                         </select>
                         <span>年</span>&nbsp;
                         <select name="month" class="form-control" v-model="date.month">
@@ -32,7 +32,7 @@
                             <option v-for="date in calculateDate(date.year, date.month)" :value="date">{{ date }}</option>
                         </select>
                         <span>日</span>&nbsp;
-                        <button class="btn btn-primary" type="button" @click="search">検索</button>
+                        <button class="btn btn-primary form-control" type="button" @click="search">検索</button>
                     </form>
                 </div>
             </div>
@@ -147,7 +147,7 @@
                                 </td>
                                 <td>
                                     <select :name="`opponentSubjectCd${index}`" v-model="income.opponentSubjectCd" class="form-control">
-                                        <option value="null" disabled selected>--</option>
+                                        <option value="">--</option>
                                         <option
                                             :value="subject.subjectDetailCd"
                                             v-for="subject in opponentSubjects"
@@ -158,8 +158,8 @@
                                 </td>
                                 <td><input :name="`note${index}`" type="text" v-model="income.note" class="form-control"></td>
                                 <td>
-                                    <select :name="`movieCd${index}`" v-model="income.movieCd" class="form-control">
-                                        <option value="null" disabled selected>--</option>
+                                    <select :name="`screeningWorkId${index}`" v-model="income.screeningWorkId" class="form-control">
+                                        <option value="">--</option>
                                         <option
                                             :value="screeningWork.screeningWorkId"
                                             v-for="screeningWork in screeningWorks"
