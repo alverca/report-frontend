@@ -19,6 +19,6 @@ export default (err: any, req: Request, res: Response, next: NextFunction) => {
     if (err instanceof Error) {
         ErrorController.badRequest(err, req, res);
     } else {
-        ErrorController.internalServerError(res);
+        ErrorController.internalServerError(req, res);
     }
 };

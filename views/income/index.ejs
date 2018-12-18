@@ -10,24 +10,24 @@
                 <div class="navbar-text navbar-right">
                     <form class="form-inline" method="GET" id="search-form">
                         <span>劇場</span>&nbsp;
-                        <select name="theaterCd" class="form-control" v-model="theaterCd" @change="updateScreeningWork()">
+                        <select name="theaterCd" class="form-control" v-model="theaterCd">
                             <option value="" disabled selected>選択してください</option>
                             <% for (const theater of theaters) { %>
                                 <option value="<%= theater.theaterCd %>"><%= theater.theaterName %></option>
                             <% } %>
                         </select>
                         <span class="separator"></span>
-                        <select name="year" class="form-control" v-model="date.year" @change="updateScreeningWork()">
+                        <select name="year" class="form-control" v-model="date.year">
                             <option value="0" disabled selected>--</option>
                             <option v-for="year in _.range(2000, 2020)" :value="year">{{ year }}</option>
                         </select>
                         <span>年</span>&nbsp;
-                        <select name="month" class="form-control" v-model="date.month" @change="updateScreeningWork()">
+                        <select name="month" class="form-control" v-model="date.month">
                             <option value="0" disabled selected>--</option>
                             <option v-for="month in 12" :value="padZero(month)">{{ padZero(month) }}</option>
                         </select>
                         <span>月</span>&nbsp;
-                        <select name="date" class="form-control" v-model="date.date" @change="updateScreeningWork()">
+                        <select name="date" class="form-control" v-model="date.date">
                             <option value="0" disabled selected>--</option>
                             <option v-for="date in calculateDate(date.year, date.month)" :value="date">{{ date }}</option>
                         </select>
@@ -39,7 +39,7 @@
         </nav>
     </header>
 
-    <div class="container" v-if="incomes.length > 0">
+    <div class="container" v-if="incomes.length > 0" style="display: none" :style="{ display: initialized ? 'block' : 'none' }">
         <div class="row" v-if="incomes.length > 0">
             <div class="col-xs-12 info-container">
                 <div class="additional-info">
@@ -89,7 +89,7 @@
                                         class="form-control"
                                         @change="resetSubject(true, true, index)"
                                     >
-                                        <option value="0" disabled selected>--</option>
+                                        <option value="null" disabled selected>--</option>
                                         <option
                                             :value="subjectGroup.subjectGroupCd"
                                             v-for="subjectGroup in subjectGroups"
@@ -105,7 +105,7 @@
                                         class="form-control"
                                         @change="resetSubject(false, true, index)"
                                     >
-                                        <option value="0" disabled selected>--</option>
+                                        <option value="null" disabled selected>--</option>
                                         <option
                                             :value="subject.subjectCd"
                                             v-for="subject in generateSubjects(income.subjectGroupCd, index)"
@@ -120,7 +120,7 @@
                                         v-model="income.subjectDetailCd"
                                         class="form-control"
                                     >
-                                        <option value="0" disabled selected>--</option>
+                                        <option value="null" disabled selected>--</option>
                                         <option
                                             :value="subjectDetail.subjectDetailCd"
                                             v-for="subjectDetail in generateSubjectDetails(income.subjectCd, index)"
@@ -131,7 +131,7 @@
                                 </td>
                                 <td>
                                     <input
-                                        type="text"
+                                        type="number"
                                         v-model="income.quantity"
                                         class="form-control"
                                         :name="`quantity${index}`"
@@ -139,7 +139,7 @@
                                 </td>
                                 <td>
                                     <input
-                                        type="text"
+                                        type="number"
                                         v-model="income.amount"
                                         class="form-control"
                                         :name="`amount${index}`"
@@ -147,7 +147,7 @@
                                 </td>
                                 <td>
                                     <select :name="`opponentSubjectCd${index}`" v-model="income.opponentSubjectCd" class="form-control">
-                                        <option value="0" disabled selected>--</option>
+                                        <option value="null" disabled selected>--</option>
                                         <option
                                             :value="subject.subjectDetailCd"
                                             v-for="subject in opponentSubjects"
@@ -159,7 +159,7 @@
                                 <td><input :name="`note${index}`" type="text" v-model="income.note" class="form-control"></td>
                                 <td>
                                     <select :name="`movieCd${index}`" v-model="income.movieCd" class="form-control">
-                                        <option value="0" disabled selected>--</option>
+                                        <option value="null" disabled selected>--</option>
                                         <option
                                             :value="screeningWork.screeningWorkId"
                                             v-for="screeningWork in screeningWorks"
@@ -175,7 +175,7 @@
             </div>
         </div>
     </div>
-    <div class="action-btn" v-if="theaterCd !== ''">
+    <div class="action-btn" v-if="!dateChanged || incomes.length > 0">
         <span class="add-btn" @click="addRow">
             +
         </span>
@@ -183,6 +183,11 @@
         <button class="btn btn-primary btn-lg" style="width: 200px" v-if="incomes.length > 0" @click="submit">
             反映
         </button>
+    </div>
+    <div class="loading" :class="{ isLoading: loading.isLoading }">
+        <!-- spinner -->
+        <div class="lds-dual-ring"></div>
+        {{ loading.message }}
     </div>
 </div>
 <%- contentFor('scripts') %>

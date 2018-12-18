@@ -43,7 +43,13 @@ var app = new Vue({
         opponentSubjects: opponentSubjectData,
         subjectGroups: subjectGroupData,
         subjectDetails: subjectDetailData,
-        screeningWorks: []
+        screeningWorks: [],
+        loading: {
+            isLoading: false,
+            message: ''
+        },
+        // JSが初期化官僚かどうか
+        initialized: false
     },
     methods:{
         // 「日」リストを作る
@@ -75,6 +81,10 @@ var app = new Vue({
             ) {
                 alert('条件が足りません！');
             } else {
+                this.loading = {
+                    isLoading: true,
+                    message: '読み込み中。。。'
+                };
                 document.getElementById('search-form').submit();
             }
         },
@@ -88,16 +98,19 @@ var app = new Vue({
             var theaterName = theater.options[theater.selectedIndex].text;
             var data = {
                 date: `${this.date.year}-${this.date.month}-${this.date.date}`,
-                subjectCd: 0,
+                subjectCd: null,
                 subjectName: '',
-                subjectGroupCd: 0,
+                subjectGroupCd: null,
                 subjectGroupName: '',
-                subjectDetailCd: 0,
+                subjectDetailCd: null,
                 subjectDetailName: '',
-                opponentSubjectCd: 0,
+                opponentSubjectCd: null,
                 opponentSubjectName: '',
-                movieCd: 0,
+                movieCd: null,
                 movieName: '',
+                workId: '',
+                workCd: '',
+                workName: '',
                 note: '',
                 amount: 0,
                 quantity: 0,
@@ -116,32 +129,39 @@ var app = new Vue({
         },
         // データ削除
         deleteRow: function(row) {
-            this.incomes.splice(row, 1);
+            if (
+                this.incomes[row].subjectDetailCd === null ||
+                confirm('細目コード' + this.incomes[row].subjectDetailCd + 'の行を削除します。よろしいですか。')
+            ) {
+                this.incomes.splice(row, 1);
+            }
         },
         // 上映作品データ更新
         updateScreeningWorkData: function(data) {
             this.screeningWorks = data;
         },
         // AJAXで上映作品データ取得
-        updateScreeningWork: function(forceUpdate) {
-            if ((this.theaterCd !== '' && this.incomes.length === 0) || forceUpdate) {
-                var data = { 
-                    date: `${this.date.year}-${this.date.month}-${this.date.date}`,
-                    theaterCd: this.theaterCd
-                };
-                $.getJSON(
-                    '/api/getScreeningWork',
-                    data,
-                    this.updateScreeningWorkData
-                ).error(function() {
-                    alert(`
-                        劇場コード：${data.theaterCd}
-                        日付：${data.date}
-                        で上映作品データを取得できません。
-                        再度試してください。
-                    `);
-                });
-            }
+        updateScreeningWork: function() {
+            var data = { 
+                date: `${this.date.year}-${this.date.month}-${this.date.date}`,
+                theaterCd: this.theaterCd
+            };
+            this.loading = {
+                isLoading: true,
+                message: '読み込み中。。。'
+            };
+            $.getJSON(
+                '/api/getScreeningWork',
+                data,
+                this.updateScreeningWorkData
+            ).error(function() {
+                alert(`
+                    劇場コード：${data.theaterCd}
+                    日付：${data.date}
+                    で上映作品データを取得できません。
+                    再度試してください。
+                `);
+            }).always(this.hideLoading);
         },
         // 科目分類を変更時、科目リストを再度作る必要がある
         generateSubjects: function(subjectGroupCd) {
@@ -158,10 +178,10 @@ var app = new Vue({
         // 選択した項目をリセット
         resetSubject: function(subject, subjectDetail, index) {
             if (subject) {
-                this.incomes[index].subjectCd = 0;
+                this.incomes[index].subjectCd = null;
             }
             if (subjectDetail) {
-                this.incomes[index].subjectDetailCd = 0;
+                this.incomes[index].subjectDetailCd = null;
             }
         },
         // 細目コードを入力した後、相応のデータを自動選択する
@@ -173,9 +193,9 @@ var app = new Vue({
                 this.incomes[index].subjectGroupCd = found.subjectGroupCd;
                 this.incomes[index].subjectCd = found.subjectCd;
             } else {
-                this.incomes[index].subjectGroupCd = 0;
-                this.incomes[index].subjectCd = 0;
-                this.incomes[index].subjectDetailCd = 0;
+                this.incomes[index].subjectGroupCd = null;
+                this.incomes[index].subjectCd = null;
+                this.incomes[index].subjectDetailCd = null;
                 alert('入力した細目コードがありません。\n再度確認してください。');
             }
         },
@@ -190,31 +210,48 @@ var app = new Vue({
         submit: function() {
             var isValid = true;
             var movies = this.screeningWorks;
+            var postData = [];
             _(this.incomes).each(function(income) {
                 if (
                     // 選択していない項目があるかチェックする
-                    income.subjectCd         === 0
-                 || income.subjectGroupCd    === 0
-                 || income.subjectDetailCd   === 0
-                 || income.opponentSubjectCd === 0
-                 || income.movieCd           === 0
+                    income.subjectCd         === null
+                 || income.subjectGroupCd    === null
+                 || income.subjectDetailCd   === null
                 ) {
                     isValid = false;
                     income.isValid = false;
                 } else {
                     // 検索時、undefinedと返却場合があるから、エラーをハンドルする
                     try {
-                        income.subjectName = _(subjectData)
-                        .find(['subjectCd', income.subjectCd]).subjectName;
-                        income.subjectGroupName = _(subjectGroupData)
-                            .find(['subjectGroupCd', income.subjectGroupCd]).subjectGroupName;
-                        income.subjectDetailName = _(subjectDetailData)
-                            .find(['subjectDetailCd', income.subjectDetailCd]).subjectDetailName;
-                        income.opponentSubjectName = _(opponentSubjectData)
-                            .find(['subjectDetailCd', income.opponentSubjectCd]).subjectDetailName;
-                        income.movieName = _(movies)
-                            .find(['screeningWorkId', income.movieCd]).screeningWorkName;
+                        var data = JSON.parse(JSON.stringify(income)); // ダータをクロンする
+                        data.subjectName = _(subjectData)
+                        .find(['subjectCd', data.subjectCd]).subjectName;
+                        data.subjectGroupName = _(subjectGroupData)
+                            .find(['subjectGroupCd', data.subjectGroupCd]).subjectGroupName;
+                        data.subjectDetailName = _(subjectDetailData)
+                            .find(['subjectDetailCd', data.subjectDetailCd]).subjectDetailName;
+                        if (data.opponentSubjectCd !== null) {
+                            data.opponentSubjectName = _(opponentSubjectData)
+                                .find(['subjectDetailCd', data.opponentSubjectCd]).subjectDetailName;
+                        } else {
+                            delete data.opponentSubjectCd;
+                            delete data.opponentSubjectName;
+                        }
+                        if (data.movieCd !== null) {
+                            var movie = _(movies).find(['screeningWorkId', data.movieCd]);
+                            data.movieName = movie.screeningWorkName;
+                            data.workId = movie.workId;
+                            data.workCd = movie.workCd;
+                            data.workName = movie.workName;
+                        } else {
+                            delete data.movieCd;
+                            delete data.movieName;
+                            delete data.workCd;
+                            delete data.workName;
+                            delete data.workId;
+                        }
                         income.isValid = true;
+                        postData.push(data);
                     } catch (err) {
                         console.error(err);
                         isValid = false;
@@ -222,26 +259,50 @@ var app = new Vue({
                     }
                 }
             });
-            if (isValid) {
+            var isToday = new Date().toISOString().indexOf(this.incomes[0].date.slice(0, 10)) >= 0;
+            if (isValid && (isToday || confirm('本日以外の内容を変更します。よろしいですか？'))) {
                 // OK => AJAXでデータをサーバに流す
-                console.log(this.incomes);
+                // console.log(this.incomes);
+                this.loading = {
+                    isLoading: true,
+                    message: '保存中。。。'
+                };
                 $.ajax('/api/saveIncomes', {
                     method: 'POST',
-                    data: { data: this.incomes }
+                    data: { data: postData },
+                    success: function () {
+                        // 保存中というメッセージを非表示になった後、ダイアログを表示
+                        setTimeout(function() {
+                            alert('正常に保存されました。');
+                        }, 100);
+                    },
+                    error: function(err) {
+                        console.error(err);
+                        alert('エラーが発生しました。ページをリフレッシュします。');
+                    },
+                    complete: this.hideLoading
                 });
-            } else {
-                // NG
-                alert('情報が足りません。再度確認してください。');
             }
+        },
+        hideLoading: function() {
+            this.loading = { isLoading: false };
+        }
+    },
+    computed: {
+        dateChanged: function() {
+            return this.theaterCd  !== query.theaterCd
+                || this.date.date  !== query.date
+                || this.date.month !== query.month
+                || this.date.year  !== query.year;
         }
     },
     created: function() {
         // リストを初期化後で値をセットする
         this.date.date = query.date;
         if (
-            this.date.date === 0 ||
+            this.date.date  === 0 ||
             this.date.month === 0 ||
-            this.date.year === 0
+            this.date.year  === 0
         ) {
             var d = new Date();
             this.date = {
@@ -251,8 +312,9 @@ var app = new Vue({
             }
         }
         // 上映作品リストを取得
-        this.updateScreeningWork(true);
+        this.updateScreeningWork();
         // データにステートを追加する
         _(this.incomes).each(function(i) { i.isValid = true });
+        this.initialized = true;
     }
 });

@@ -11,6 +11,6 @@ exports.default = (err, req, res, next) => {
         ErrorController.badRequest(err, req, res);
     }
     else {
-        ErrorController.internalServerError(res);
+        ErrorController.internalServerError(req, res);
     }
 };
