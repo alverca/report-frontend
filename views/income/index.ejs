@@ -1,13 +1,13 @@
 <div id="app">
     <header>
         <nav class="navbar navbar-default">
-            <div class="container">
+            <div class="container-fluid">
                 <div class="navbar-header">
                     <h3 class="title">
                         <%= title %>
                     </h3>
                 </div>
-                <div class="navbar-text navbar-right">
+                <div class="navbar-text navbar-right" style="margin-right: 0">
                     <form class="form-inline" method="GET" id="search-form">
                         <span>劇場</span>&nbsp;
                         <select name="theaterCd" class="form-control" v-model="theaterCd">
@@ -18,17 +18,14 @@
                         </select>
                         <span class="separator"></span>
                         <select name="year" class="form-control" v-model="date.year">
-                            <option value="0" disabled selected>--</option>
-                            <option v-for="year in _.range(2015, new Date().getFullYear() + 2)" :value="year">{{ year }}</option>
+                            <option v-for="year in _.range(new Date().getFullYear() - 1, new Date().getFullYear() + 2)" :value="year">{{ year }}</option>
                         </select>
                         <span>年</span>&nbsp;
                         <select name="month" class="form-control" v-model="date.month">
-                            <option value="0" disabled selected>--</option>
                             <option v-for="month in 12" :value="padZero(month)">{{ padZero(month) }}</option>
                         </select>
                         <span>月</span>&nbsp;
                         <select name="date" class="form-control" v-model="date.date">
-                            <option value="0" disabled selected>--</option>
                             <option v-for="date in calculateDate(date.year, date.month)" :value="date">{{ date }}</option>
                         </select>
                         <span>日</span>&nbsp;
@@ -39,7 +36,7 @@
         </nav>
     </header>
 
-    <div class="container" v-if="incomes.length > 0" style="display: none" :style="{ display: initialized ? 'block' : 'none' }">
+    <div class="container-fluid" v-if="incomes.length > 0" style="display: none" :style="{ display: initialized ? 'block' : 'none' }">
         <div class="row" v-if="incomes.length > 0">
             <div class="col-xs-12 info-container">
                 <div class="additional-info">
@@ -59,20 +56,20 @@
                         <thead>
                             <tr>
                                 <th></th>
-                                <th style="width: 70px">細目</th>
-                                <th>科目分類</th>
-                                <th>科目</th>
-                                <th>細目</th>
-                                <th style="width: 100px">数量</th>
-                                <th style="width: 100px">金額</th>
-                                <th>相手科目</th>
-                                <th>備考</th>
-                                <th>作品</th>
+                                <th style="min-width: 100px">細目</th>
+                                <th style="min-width: 140px">科目分類</th>
+                                <th style="min-width: 160px">科目</th>
+                                <th style="min-width: 180px">細目</th>
+                                <th style="min-width: 100px">数量</th>
+                                <th style="min-width: 115px">金額</th>
+                                <th style="min-width: 140px">相手細目</th>
+                                <th style="min-width: 260px">備考</th>
+                                <th style="min-width: 480px">作品</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="(income, index) in incomes" :class="{ error: income.isValid === false }" v-model="income.isValid">
-                                <td><button class="btn btn-danger" @click="deleteRow(index)">削除</button></td>
+                                <td style="text-align: center"><button class="btn btn-danger" @click="deleteRow(index)">削除</button></td>
                                 <td>
                                     <input
                                         type="text"
@@ -134,7 +131,8 @@
                                         type="number"
                                         v-model="income.quantity"
                                         class="form-control"
-                                        :name="`quantity${index}`"
+                                        :name="`quantity-${index}`"
+                                        @input="parseNumberInput"
                                     >
                                 </td>
                                 <td>
@@ -142,7 +140,8 @@
                                         type="number"
                                         v-model="income.amount"
                                         class="form-control"
-                                        :name="`amount${index}`"
+                                        :name="`amount-${index}`"
+                                        @input="parseNumberInput"
                                     >
                                 </td>
                                 <td>

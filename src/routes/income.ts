@@ -31,7 +31,7 @@ incomeRouter.get('', async (req, res, next) => {
             });
         }
         res.render('income/index', {
-            title: '興行外収入',
+            title: '日報入力',
             theaters,
             accounts,
             incomes

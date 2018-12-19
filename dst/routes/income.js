@@ -39,7 +39,7 @@ incomeRouter.get('', (req, res, next) => __awaiter(this, void 0, void 0, functio
             });
         }
         res.render('income/index', {
-            title: '興行外収入',
+            title: '日報入力',
             theaters,
             accounts,
             incomes

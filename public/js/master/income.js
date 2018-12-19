@@ -66,7 +66,7 @@ var app = new Vue({
                 }
             }
             if (dateArr.indexOf(this.date.date) < 0) {
-                this.date.date = 0;
+                this.date.date = '01';
             }
             return dateArr;
         },
@@ -111,8 +111,8 @@ var app = new Vue({
                 screeningWorkSubTitle: '',
                 workCd: '',
                 note: '',
-                amount: 0,
-                quantity: 0,
+                amount: '',
+                quantity: '',
                 theaterCd: this.theaterCd,
                 theaterName: theaterName,
                 isValid: true,
@@ -186,11 +186,12 @@ var app = new Vue({
         // 細目コードを入力した後、相応のデータを自動選択する
         searchSubjectDetailByCode: function(subjectDetailCd, index) {
             var found = _.find(accountData, function(data) {
-                return data.subjectDetailCd === subjectDetailCd;
+                return data.subjectDetailCd === subjectDetailCd.trim();
             });
             if (found !== undefined) {
                 this.incomes[index].subjectGroupCd = found.subjectGroupCd;
                 this.incomes[index].subjectCd = found.subjectCd;
+                this.incomes[index].subjectDetailCd = subjectDetailCd.trim();
             } else {
                 this.incomes[index].subjectGroupCd = null;
                 this.incomes[index].subjectCd = null;
@@ -208,18 +209,30 @@ var app = new Vue({
         // データバリデーション
         submit: function() {
             var isValid = true;
+            var message = '';
             var movies = this.screeningWorks;
             var postData = [];
             _(this.incomes).each(function(income) {
                 if (
                     // 選択していない項目があるかチェックする
-                    income.subjectCd         === null
-                 || income.subjectGroupCd    === null
-                 || income.subjectDetailCd   === null
+                    income.subjectCd       === null
+                 || income.subjectGroupCd  === null
+                 || income.subjectDetailCd === null
                 ) {
                     isValid = false;
+                    message = '細目コードが空白の行が存在してます。';
                     income.isValid = false;
-                } else {
+                }
+                if (
+                    // 金額が入力（１以上）の場合、相手科目は必須とする
+                    income.amount            >   0
+                 && income.opponentSubjectCd === ''
+                ) {
+                    isValid = false;
+                    message = '相手細目が未選択です。';
+                    income.isValid = false;
+                }
+                if (isValid) {
                     // 検索時、undefinedと返却場合があるから、エラーをハンドルする
                     try {
                         var data = JSON.parse(JSON.stringify(income)); // ダータをクロンする
@@ -280,11 +293,22 @@ var app = new Vue({
                     complete: this.hideLoading
                 });
             } else if (!isValid) {
-                alert('細目コードが空白の行が存在してます。');
+                alert(message);
             }
         },
         hideLoading: function() {
             this.loading = { isLoading: false };
+        },
+        parseNumberInput: function(event) {
+            var value = parseInt(event.target.value);
+            var identifier = event.target.name.split('-');
+            var index = identifier[1];
+            var property = identifier[0];
+            if (value > 0) {
+                this.incomes[index][property] = value;
+            } else {
+                this.incomes[index][property] = '';
+            }
         }
     },
     computed: {
