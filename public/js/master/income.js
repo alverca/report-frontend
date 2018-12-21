@@ -24,6 +24,21 @@ var subjectDetailData = _.map(
     }
 );
 
+_.forEach(incomeData, function(data) {
+    if (data.amount > 999) {
+        data.amount = data.amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    } else {
+        data.amount = data.amount === undefined || data.amount === null ? 
+            '0' : data.amount.toString();
+    }
+    if (data.quantity > 999) {
+        data.quantity = data.quantity.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    } else {
+        data.quantity = data.quantity === undefined || data.quantity === null ? 
+            '0' : data.quantity.toString();
+    }
+});
+
 // メインアップロジック
 var app = new Vue({
     el: '#app',
@@ -79,7 +94,7 @@ var app = new Vue({
              || this.date.month === 0
              || this.date.year  === 0
             ) {
-                alert('条件が足りません！');
+                alert('劇場を選択してください。');
             } else {
                 this.loading = {
                     isLoading: true,
@@ -111,8 +126,8 @@ var app = new Vue({
                 screeningWorkSubTitle: '',
                 workCd: '',
                 note: '',
-                amount: '',
-                quantity: '',
+                amount: 0,
+                quantity: 0,
                 theaterCd: this.theaterCd,
                 theaterName: theaterName,
                 isValid: true,
@@ -213,6 +228,7 @@ var app = new Vue({
             var movies = this.screeningWorks;
             var postData = [];
             _(this.incomes).each(function(income) {
+                income.isValid = true;
                 if (
                     // 選択していない項目があるかチェックする
                     income.subjectCd       === null
@@ -223,13 +239,17 @@ var app = new Vue({
                     message = '細目コードが空白の行が存在してます。';
                     income.isValid = false;
                 }
-                if (
+                if (income.amount == '0' && income.quantity == '0') {
+                    isValid = false;
+                    message = '数量と金額のどちらか一方は１以上を入力してください。';
+                    income.isValid = false;
+                } else if (
                     // 金額が入力（１以上）の場合、相手科目は必須とする
-                    income.amount            >   0
+                    parseInt(('' + income.amount).split(',').join('')) > 0
                  && income.opponentSubjectCd === ''
                 ) {
                     isValid = false;
-                    message = '相手細目が未選択です。';
+                    message = '金額を入力する場合は、相手細目を入力してください。';
                     income.isValid = false;
                 }
                 if (isValid) {
@@ -260,7 +280,8 @@ var app = new Vue({
                             data.screeningWorkSubTitle = null;
                             data.workCd = null;
                         }
-                        income.isValid = true;
+                        data.amount = parseInt(('' + data.amount).split(',').join(''));
+                        data.quantity = parseInt(('' + data.quantity).split(',').join(''));
                         postData.push(data);
                     } catch (err) {
                         console.error(err);
@@ -293,6 +314,7 @@ var app = new Vue({
                     complete: this.hideLoading
                 });
             } else if (!isValid) {
+                this.$forceUpdate();
                 alert(message);
             }
         },
@@ -300,14 +322,15 @@ var app = new Vue({
             this.loading = { isLoading: false };
         },
         parseNumberInput: function(event) {
-            var value = parseInt(event.target.value);
+            var displayValue = event.target.value;
+            var value = parseInt(displayValue.split(',').join(''));
             var identifier = event.target.name.split('-');
             var index = identifier[1];
             var property = identifier[0];
             if (value > 0) {
-                this.incomes[index][property] = value;
+                this.incomes[index][property] = value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             } else {
-                this.incomes[index][property] = '';
+                this.incomes[index][property] = 0;
             }
         }
     },

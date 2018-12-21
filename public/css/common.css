@@ -15,7 +15,8 @@
 
 .action-btn .add-btn {
     display: inline-block;
-    font-size: 3em;
+    position: relative;
+    font-size: 2em;
     border-radius: 50%;
     background-color: #337ab7;
     border: 1px solid #2e6da4;
@@ -23,13 +24,23 @@
     height: 50px;
     margin-bottom: 10px;
     color: #fff;
-    line-height: 40px;
     cursor: pointer;
+}
+
+.action-btn .add-btn > .fas {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .action-btn .add-btn:hover {
     background-color: #286090;
     border-color: #204d74;
+}
+
+.btn.btn-small {
+    padding: 6px 5px;
 }
 
 .data-table table {
@@ -50,6 +61,10 @@
 
 .info-container {
     text-align: center;
+}
+
+.table-narrow .table>tbody>tr>td {
+    padding: 8px 2px;
 }
 
 .additional-info {
