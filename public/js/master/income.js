@@ -272,7 +272,7 @@ var app = new Vue({
                         if (data.screeningWorkId !== '') {
                             var movie = _(movies).find(['screeningWorkId', data.screeningWorkId]);
                             data.screeningWorkName = movie.screeningWorkName;
-                            data.screeningWorkSubTitle = movie.screeningWorkSubTitle;
+                            data.screeningWorkSubTitle = movie.screeningWorkSubtitle;
                             data.workCd = movie.workCd;
                         } else {
                             data.screeningWorkId = null;
