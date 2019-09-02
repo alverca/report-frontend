@@ -290,7 +290,8 @@ var app = new Vue({
                     }
                 }
             });
-            var isToday = new Date().toISOString().indexOf(this.incomes[0].date.slice(0, 10)) >= 0;
+            var isToday = new Date().toISOString().indexOf(this.date.year + '-' + this.date.month + '-' + this.date.date) >= 0;
+            // var isToday = new Date().toISOString().indexOf(this.incomes[0].date.slice(0, 10)) >= 0;
             if (isValid && (isToday || confirm('本日以外の内容を変更します。よろしいですか？'))) {
                 // OK => AJAXでデータをサーバに流す
                 // console.log(this.incomes);
